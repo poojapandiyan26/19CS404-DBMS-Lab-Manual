@@ -1,239 +1,226 @@
-# Experiment 4: Aggregate Functions, Group By and Having Clause
+# Experiment 5: Subqueries and Views
 
 ## AIM
-To study and implement aggregate functions, GROUP BY, and HAVING clause with suitable examples.
+To study and implement subqueries and views.
 
 ## THEORY
 
-### Aggregate Functions
-These perform calculations on a set of values and return a single value.
+### Subqueries
+A subquery is a query inside another SQL query and is embedded in:
+- WHERE clause
+- HAVING clause
+- FROM clause
 
-- **MIN()** – Smallest value  
-- **MAX()** – Largest value  
-- **COUNT()** – Number of rows  
-- **SUM()** – Total of values  
-- **AVG()** – Average of values
+**Types:**
+- **Single-row subquery**:
+  Sub queries can also return more than one value. Such results should be made use along with the operators in and any.
+- **Multiple-row subquery**:
+  Here more than one subquery is used. These multiple sub queries are combined by means of ‘and’ & ‘or’ keywords.
+- **Correlated subquery**:
+  A subquery is evaluated once for the entire parent statement whereas a correlated Sub query is evaluated once per row processed by the parent statement.
 
-**Syntax:**
+**Example:**
 ```sql
-SELECT AGG_FUNC(column_name) FROM table_name WHERE condition;
+SELECT * FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
 ```
-### GROUP BY
-Groups records with the same values in specified columns.
-**Syntax:**
+### Views
+A view is a virtual table based on the result of an SQL SELECT query.
+**Create View:**
 ```sql
-SELECT column_name, AGG_FUNC(column_name)
-FROM table_name
-GROUP BY column_name;
+CREATE VIEW view_name AS
+SELECT column1, column2 FROM table_name WHERE condition;
 ```
-### HAVING
-Filters the grouped records based on aggregate conditions.
-**Syntax:**
+**Drop View:**
 ```sql
-SELECT column_name, AGG_FUNC(column_name)
-FROM table_name
-GROUP BY column_name
-HAVING condition;
+DROP VIEW view_name;
 ```
 
 **Question 1**
 --
-How many medical records were created in each month?
-
-Sample table:MedicalRecords Table
+Write a SQL query to Retrieve the names and cities of customers who have the same city as customers with IDs 3 and 7
 
 ```sql
-SELECT 
-    strftime('%Y-%m', Date) AS Month,
-    COUNT(*) AS TotalRecords
-FROM MedicalRecords
-GROUP BY strftime('%Y-%m', Date)
-ORDER BY Month;
+select name,city
+from customer
+where city IN(
+          select city
+          from customer
+          where id in(3,7)
+);
 ```
 
 **Output:**
 
-<img width="785" height="504" alt="image" src="https://github.com/user-attachments/assets/ea5eca81-8c13-4676-988e-49c52b508358" />
+<img width="711" height="542" alt="image" src="https://github.com/user-attachments/assets/32b32efa-f825-4516-971a-9766659c53e5" />
 
 
 **Question 2**
 ---
-How many patients are covered by each insurance company?
+From the following tables write a SQL query to find salespeople who had more than one customer. Return salesman_id and name.
 
-Sample table:Insurance Table
+salesman table
 
 ```sql
-SELECT 
-    InsuranceCompany,
-    COUNT(DISTINCT PatientID) AS TotalPatients
-FROM Insurance
-GROUP BY InsuranceCompany
-ORDER BY InsuranceCompany;
+select s.salesman_id,s.name
+from salesman s
+join customer c
+  on s.salesman_id=c.salesman_id
+group by s.salesman_id,s.name
+having COUNT(c.customer_id)>1;
 ```
 
 **Output:**
 
-<img width="824" height="754" alt="image" src="https://github.com/user-attachments/assets/ee7050f8-92c4-4e0a-9d82-1f6e1903c636" />
+<img width="652" height="541" alt="image" src="https://github.com/user-attachments/assets/79b4842d-98ae-452c-88f5-952612b53fa1" />
 
 
 **Question 3**
 ---
-How many prescriptions were written for each medication?
-
-Sample tablePrescriptions Table
-
+Write a SQL query to retrieve all columns from the CUSTOMERS table for customers whose salary is greater than $4500.
 
 ```sql
-SELECT 
-    Medication,
-    COUNT(*) AS TotalPrescriptions
-FROM Prescriptions
-GROUP BY Medication
-ORDER BY Medication;
+select *
+from CUSTOMERS
+where salary>4500;
 ```
 
 **Output:**
 
-<img width="849" height="739" alt="image" src="https://github.com/user-attachments/assets/42359077-f61d-40a0-9912-3d6fa03aa340" />
+<img width="1234" height="496" alt="image" src="https://github.com/user-attachments/assets/7fbfdc38-76c7-4e5e-82ac-c3583ea82267" />
 
 
 **Question 4**
 ---
-Write a SQL query to find how many employees have an income greater than 50K?
+Write a SQL query to List departments with names longer than the average length
 
-Table: employee
+Departments Table (attributes: department_id, department_name)
 
 ```sql
-SELECT 
-    COUNT(*) AS employees_count
-FROM employee
-WHERE income > 50000;
+select department_id,department_name
+from Departments
+where LENGTH(department_name)>(
+       select AVG(LENGTH(department_name))
+       from Departments
+);
 ```
 
 **Output:**
 
-<img width="596" height="381" alt="image" src="https://github.com/user-attachments/assets/4195bf7a-5b5b-4754-ad1c-2a5af72b3687" />
-
+<img width="657" height="462" alt="image" src="https://github.com/user-attachments/assets/e189e289-0b23-4139-8c86-b5b0c3357c7f" />
 
 
 **Question 5**
 ---
-Write a SQL query to calculate total available amount of fruits that has a price greater than 0.5 . Return total Count. 
+Write a SQL query that retrieves the all the columns from the Table Grades, where the grade is equal to the minimum grade achieved in each subject.
 
-Note: Inventory attribute contains amount of fruits
-
-Table: fruits
+Sample table: GRADES (attributes: student_id, student_name, subject, grade)
 
 ```sql
-SELECT 
-    SUM(inventory) AS total_available_amount
-FROM fruits
-WHERE price > 0.5;
+select *
+from GRADES g
+where grade=(
+    select MIN(grade)
+    from GRADES
+    where subject=g.subject
+);
 ```
 
 **Output:**
 
-<img width="714" height="381" alt="image" src="https://github.com/user-attachments/assets/0eb3173d-a887-41d8-a6a4-07f28c48173a" />
+<img width="1249" height="513" alt="image" src="https://github.com/user-attachments/assets/bfb17f62-d12c-43e8-be38-ad988481f354" />
 
 
 **Question 6**
 ---
-Write a SQL query to determine the number of customers who received at least one grade for their activity.
-
-Sample table: customer
+Write a SQL query to Find employees who have an age less than the average age of employees with incomes over 2.5 Lakh
 
 ```sql
-SELECT 
-    COUNT(*) AS COUNT
-FROM customer
-WHERE grade IS NOT NULL;
+select *
+from Employee
+where age<(
+    select AVG(age)
+    from Employee
+    where income>250000);
 ```
 
 **Output:**
 
-<img width="503" height="402" alt="image" src="https://github.com/user-attachments/assets/75303e5a-2e7b-449a-8c74-1bd1704e57aa" />
+<img width="1136" height="454" alt="image" src="https://github.com/user-attachments/assets/68a9c84c-857d-4902-81c6-7871eb1576da" />
+
 
 **Question 7**
 ---
-Write a SQL query to return the total number of rows in the 'customer' table where the city is Noida.
-
-Sample table: customer
+Write a SQL query to retrieve all columns from the CUSTOMERS table for customers whose salary is LESS than $2500.
 
 ```sql
-SELECT 
-    COUNT(*) AS COUNT
-FROM customer
-WHERE city = 'Noida';
+select *
+from CUSTOMERS
+WHERE SALARY<2500;
 ```
 
 **Output:**
 
-<img width="389" height="371" alt="image" src="https://github.com/user-attachments/assets/5b793e25-f7e1-4f7c-a9ac-d0354ec32888" />
+<img width="1075" height="466" alt="image" src="https://github.com/user-attachments/assets/e9bb2334-d1c0-4b28-97cc-79e22bb8e47c" />
 
 
 **Question 8**
 ---
-Write the SQL query that accomplishes the grouping of data by joining date (jdate), calculates the average work hours for each date, and excludes dates where the average work hour is not less than 10.
+Write a SQL query to Retrieve the medications with dosages equal to the highest dosage
 
-Sample table: employee1
+Table Name: Medications (attributes: medication_id, medication_name, dosage)
 
 ```sql
-SELECT 
-    jdate, 
-    AVG(workhour) AS "AVG(workhour)"
-FROM employee1
-GROUP BY jdate
-HAVING AVG(workhour) < 10;
+SELECT *
+from Medications
+where dosage=(
+    select MAX(dosage)
+    from Medications);
 ```
 
 **Output:**
 
-<img width="650" height="418" alt="image" src="https://github.com/user-attachments/assets/ab400566-303c-4a7e-aa91-13a23fbf1ee0" />
+<img width="842" height="356" alt="image" src="https://github.com/user-attachments/assets/aefa6167-3d0f-42aa-a123-247df7e53e31" />
 
 
 **Question 9**
 ---
-Write the SQL query that accomplishes the grouping of data by age, calculates the total income for each age group, and includes only those age groups where the total income sum is greater than 1,000,000.
+Write a SQL query to Retrieve the medications with dosages equal to the lowest dosage
 
-Sample table: employee
-
-
+Table Name: Medications (attributes: medication_id, medication_name, dosage)
 
 ```sql
-SELECT 
-    age, 
-    SUM(income) AS "SUM(income)"
-FROM employee
-GROUP BY age
-HAVING SUM(income) > 1000000;
+select *
+from Medications
+where dosage=(
+     select MIN(dosage)
+     from Medications);
 ```
 
 **Output:**
 
-<img width="716" height="475" alt="image" src="https://github.com/user-attachments/assets/c906b935-d685-4a36-8c0f-0b4248ff2cb8" />
-
+<img width="782" height="367" alt="image" src="https://github.com/user-attachments/assets/a99c9962-b6fe-45dc-96d4-e007fb3b04aa" />
 
 
 **Question 10**
 ---
-Write the SQL query that achieves the grouping of data by occupation, calculates the total work hours for each occupation, and excludes occupations where the total work hour sum is not greater than 20.
-
-Sample table: employee1
+Write a query to display all the customers whose ID is the difference between the salesperson ID of Mc Lyon and 2001.
 
 ```sql
-SELECT 
-    occupation, 
-    SUM(workhour) AS "SUM(workhour)"
-FROM employee1
-GROUP BY occupation
-HAVING SUM(workhour) > 20;
+select *
+from customer
+where customer_id=(
+     select salesman_id-2001
+     from salesman
+     where name='Mc Lyon');
+
 ```
 
 **Output:**
 
-<img width="626" height="452" alt="image" src="https://github.com/user-attachments/assets/ed593055-ba3f-461f-bf82-1ad3a5cead64" />
+<img width="1122" height="263" alt="image" src="https://github.com/user-attachments/assets/4ece95f1-7d45-422c-b7e3-803a7c3cad19" />
 
 
 
 ## RESULT
-Thus, the SQL queries to implement aggregate functions, GROUP BY, and HAVING clause have been executed successfully.
+Thus, the SQL queries to implement subqueries and views have been executed successfully.
